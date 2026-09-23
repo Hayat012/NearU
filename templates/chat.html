@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chat - NearU</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="chat-page">
+
+    <div class="chat-container">
+
+        <!-- Chat Header -->
+        <div class="chat-header">
+
+            <a href="{{ url_for('index') }}"
+               class="chat-back">←</a>
+
+            <div class="chat-user-photo">
+
+                {% if other_user['profile_photo'] %}
+
+                    <img src="{{ url_for('static', filename=other_user['profile_photo']) }}"
+                         alt="Profile">
+
+                {% else %}
+
+                    👤
+
+                {% endif %}
+
+            </div>
+
+            <div class="chat-user-info">
+
+                <h3>{{ other_user['name'] }}</h3>
+
+                <span>NearU User</span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Messages -->
+        <div class="messages" id="messagesContainer">
+
+            {% if not messages %}
+
+                <div class="no-messages">
+                    No messages yet. Start the conversation!
+                </div>
+
+            {% endif %}
+
+            {% for msg in messages %}
+
+                {% if msg['message_type'] == 'audio' %}
+
+                    <div class="message
+                        {% if msg['sender_id'] == session['user_id'] %}
+                            sent
+                        {% else %}
+                            received
+                        {% endif %}">
+
+                        <audio controls class="voice-message-audio">
+
+                            <source
+                                src="{{ url_for('static', filename=msg['audio_file']) }}"
+                                type="audio/webm">
+
+                            Your browser does not support audio.
+
+                        </audio>
+
+                    </div>
+
+                {% else %}
+
+                    {% if msg['sender_id'] == session['user_id'] %}
+
+                        <div class="message sent">
+                            {{ msg['message'] }}
+                        </div>
+
+                    {% else %}
+
+                        <div class="message received">
+                            {{ msg['message'] }}
+                        </div>
+
+                    {% endif %}
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Message Box -->
+        <form class="chat-input-area"
+              id="messageForm"
+              method="POST"
+              action="{{ url_for('send_message', user_id=other_user['id']) }}">
+
+            <button type="button"
+                    class="call-button">
+                📞
+            </button>
+
+            <input type="text"
+                   name="message"
+                   id="messageInput"
+                   placeholder="Type a message..."
+                   required>
+
+            <button type="button"
+                    class="mic-button"
+                    id="micButton">
+                🎤
+            </button>
+
+            <button type="submit"
+                    class="send-button">
+                ➤
+            </button>
+
+        </form>
+
+    </div>
+
+<!-- =====================================================
+     COMPLETE CHAT JAVASCRIPT
+     ===================================================== -->
+
+<script>
+
+    /* =====================================================
+       GLOBAL ELEMENTS
+       ===================================================== */
+
+    const micButton =
+        document.getElementById("micButton");
+
+    const messagesContainer =
+        document.getElementById("messagesContainer");
+
+
+
+    /* =====================================================
+       VOICE RECORDING VARIABLES
+       ===================================================== */
+
+    let mediaRecorder = null;
+
+    let audioChunks = [];
+
+    let isRecording = false;
+
+
+
+    /* =====================================================
+       VOICE RECORDING
+       ===================================================== */
+
+    if (micButton) {
+
+        micButton.addEventListener(
+            "click",
+            async function () {
+
+                /* -----------------------------------------
+                   START RECORDING
+                   ----------------------------------------- */
+
+                if (!isRecording) {
+
+                    try {
+
+                        const stream =
+                            await navigator.mediaDevices
+                                .getUserMedia({
+                                    audio: true
+                                });
+
+
+                        mediaRecorder =
+                            new MediaRecorder(stream);
+
+
+                        audioChunks = [];
+
+
+                        /* ---------------------------------
+                           AUDIO DATA
+                           --------------------------------- */
+
+                        mediaRecorder.ondataavailable =
+                            function (event) {
+
+                                if (event.data.size > 0) {
+
+                                    audioChunks.push(
+                                        event.data
+                                    );
+
+                                }
+
+                            };
+
+
+                        /* ---------------------------------
+                           RECORDING STOP
+                           --------------------------------- */
+
+                        mediaRecorder.onstop =
+                            async function () {
+
+                                const audioBlob =
+                                    new Blob(
+                                        audioChunks,
+                                        {
+                                            type:
+                                                "audio/webm"
+                                        }
+                                    );
+
+
+                                const formData =
+                                    new FormData();
+
+
+                                formData.append(
+                                    "audio",
+                                    audioBlob,
+                                    "voice.webm"
+                                );
+
+
+                                try {
+
+                                    /* -------------------------
+                                       SEND VOICE TO FLASK
+                                       ------------------------- */
+
+                                    const response =
+                                        await fetch(
+                                            "{{ url_for('send_voice', user_id=other_user['id']) }}",
+                                            {
+                                                method: "POST",
+                                                body: formData
+                                            }
+                                        );
+
+
+                                    if (!response.ok) {
+
+                                        throw new Error(
+                                            "Voice message send failed"
+                                        );
+
+                                    }
+
+
+                                    /* -------------------------
+                                       GET JSON RESPONSE
+                                       ------------------------- */
+
+                                    const data =
+                                        await response.json();
+
+
+                                    if (!data.success) {
+
+                                        throw new Error(
+                                            "Voice message was not saved"
+                                        );
+
+                                    }
+
+
+                                    /* -------------------------
+                                       CREATE NEW MESSAGE
+                                       ------------------------- */
+
+                                    const newMessage =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+
+                                    newMessage.className =
+                                        "message sent";
+
+
+                                    /* -------------------------
+                                       CREATE AUDIO PLAYER
+                                       ------------------------- */
+
+                                    const audioPlayer =
+                                        document.createElement(
+                                            "audio"
+                                        );
+
+
+                                    audioPlayer.controls = true;
+
+                                    audioPlayer.className =
+                                        "voice-message-audio";
+
+
+                                    /* -------------------------
+                                       AUDIO SOURCE
+                                       ------------------------- */
+
+                                    const source =
+                                        document.createElement(
+                                            "source"
+                                        );
+
+
+                                    source.src =
+                                        "{{ url_for('static', filename='') }}" +
+                                        data.audio_file;
+
+
+                                    source.type =
+                                        "audio/webm";
+
+
+                                    audioPlayer.appendChild(
+                                        source
+                                    );
+
+
+                                    newMessage.appendChild(
+                                        audioPlayer
+                                    );
+
+
+                                    /* -------------------------
+                                       ADD TO CHAT
+                                       ------------------------- */
+
+                                    if (messagesContainer) {
+
+                                        messagesContainer
+                                            .appendChild(
+                                                newMessage
+                                            );
+
+
+                                        /* ---------------------
+                                           SCROLL TO NEW MESSAGE
+                                           --------------------- */
+
+                                        messagesContainer
+                                            .scrollTop =
+                                            messagesContainer
+                                                .scrollHeight;
+
+                                    }
+
+
+                                    /* -------------------------
+                                       ONLY ONE VOICE AT A TIME
+                                       ------------------------- */
+
+                                    audioPlayer.addEventListener(
+                                        "play",
+                                        function () {
+
+                                            stopOtherVoices(
+                                                audioPlayer
+                                            );
+
+                                        }
+                                    );
+
+
+                                } catch (error) {
+
+                                    console.error(error);
+
+                                    alert(
+                                        "Voice message send nahi hua."
+                                    );
+
+                                }
+
+
+                                /* -------------------------
+                                   STOP MICROPHONE
+                                   ------------------------- */
+
+                                stream
+                                    .getTracks()
+                                    .forEach(
+                                        function (track) {
+
+                                            track.stop();
+
+                                        }
+                                    );
+
+                            };
+
+
+                        /* ---------------------------------
+                           START RECORDING
+                           --------------------------------- */
+
+                        mediaRecorder.start();
+
+                        isRecording = true;
+
+                        micButton.textContent =
+                            "⏹️";
+
+
+                    } catch (error) {
+
+                        console.error(error);
+
+                        alert(
+                            "Microphone permission is required."
+                        );
+
+                    }
+
+
+                }
+
+                /* -----------------------------------------
+                   STOP RECORDING
+                   ----------------------------------------- */
+
+                else {
+
+                    if (mediaRecorder) {
+
+                        mediaRecorder.stop();
+
+                    }
+
+                    isRecording = false;
+
+                    micButton.textContent =
+                        "🎤";
+
+                }
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       STOP ALL OTHER VOICE PLAYERS
+       ===================================================== */
+
+    function stopOtherVoices(currentPlayer) {
+
+        const voicePlayers =
+            document.querySelectorAll(
+                ".voice-message-audio"
+            );
+
+
+        voicePlayers.forEach(
+            function (player) {
+
+                if (player !== currentPlayer) {
+
+                    player.pause();
+
+                    player.currentTime = 0;
+
+                }
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       EXISTING VOICE MESSAGES
+       ONLY ONE CAN PLAY AT A TIME
+       ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const voicePlayers =
+                document.querySelectorAll(
+                    ".voice-message-audio"
+                );
+
+
+            voicePlayers.forEach(
+                function (player) {
+
+                    player.addEventListener(
+                        "play",
+                        function () {
+
+                            stopOtherVoices(
+                                player
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+
+    /* =====================================================
+       SEND TEXT MESSAGE WITHOUT PAGE RELOAD
+       ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const messageForm =
+                document.getElementById(
+                    "messageForm"
+                );
+
+
+            const messageInput =
+                document.getElementById(
+                    "messageInput"
+                );
+
+
+            if (!messageForm) {
+                return;
+            }
+
+
+            messageForm.addEventListener(
+                "submit",
+                async function (event) {
+
+                    /* -------------------------
+                       STOP NORMAL FORM SUBMIT
+                       ------------------------- */
+
+                    event.preventDefault();
+
+
+                    const message =
+                        messageInput.value.trim();
+
+
+                    if (!message) {
+                        return;
+                    }
+
+
+                    try {
+
+                        /* -------------------------
+                           SEND TO FLASK
+                           ------------------------- */
+
+                        const response =
+                            await fetch(
+                                messageForm.action,
+                                {
+                                    method: "POST",
+                                    body:
+                                        new FormData(
+                                            messageForm
+                                        )
+                                }
+                            );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                "Message send failed"
+                            );
+
+                        }
+
+
+                        /* -------------------------
+                           CREATE NEW TEXT MESSAGE
+                           ------------------------- */
+
+                        const newMessage =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        newMessage.className =
+                            "message sent";
+
+
+                        newMessage.textContent =
+                            message;
+
+
+                        /* -------------------------
+                           ADD TO CHAT
+                           ------------------------- */
+
+                        if (messagesContainer) {
+
+                            messagesContainer
+                                .appendChild(
+                                    newMessage
+                                );
+
+
+                            /* ---------------------
+                               SCROLL TO LATEST
+                               --------------------- */
+
+                            messagesContainer
+                                .scrollTop =
+                                messagesContainer
+                                    .scrollHeight;
+
+                        }
+
+
+                        /* -------------------------
+                           CLEAR INPUT
+                           ------------------------- */
+
+                        messageInput.value = "";
+
+
+                        /* -------------------------
+                           FOCUS INPUT
+                           ------------------------- */
+
+                        messageInput.focus();
+
+
+                    } catch (error) {
+
+                        console.error(error);
+
+                        alert(
+                            "Message send nahi hua."
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+
+    /* =====================================================
+       INITIAL CHAT SCROLL
+       ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            if (messagesContainer) {
+
+                setTimeout(
+                    function () {
+
+                        messagesContainer
+                            .scrollTop =
+                            messagesContainer
+                                .scrollHeight;
+
+                    },
+                    50
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>

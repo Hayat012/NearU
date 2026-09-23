@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - NearU</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="messages-page">
+
+    <div class="messages-container">
+
+        <div class="messages-header">
+            <a href="{{ url_for('index') }}" class="messages-back">←</a>
+            <h2>Messages</h2>
+        </div>
+
+        {% if chats %}
+
+            <div class="chat-list">
+
+                {% for chat in chats %}
+
+                    <a href="{{ url_for('chat', user_id=chat['id']) }}"
+                       class="chat-list-item">
+
+                        <div class="chat-list-photo">
+                            {% if chat['profile_photo'] %}
+                                <img src="{{ url_for('static',
+                                     filename=chat['profile_photo']) }}"
+                                     alt="Profile">
+                            {% else %}
+                                👤
+                            {% endif %}
+                        </div>
+
+                        <div class="chat-list-content">
+
+                            <div class="chat-list-top">
+                                <strong>{{ chat['name'] }}</strong>
+
+                                <span class="chat-date">
+                                    {{ chat['sent_at'] }}
+                                </span>
+                            </div>
+
+                            <p>{{ chat['message'] }}</p>
+
+                        </div>
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="messages-empty">
+                <div class="empty-message-icon">Ⓜ️</div>
+                <h3>No messages yet</h3>
+                <p>Your conversations will appear here.</p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

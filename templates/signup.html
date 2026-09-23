@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sign Up - NearU</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="signup-page-body">
+
+    <div class="signup-page">
+
+        <!-- Background glow -->
+        <div class="signup-glow signup-glow-1"></div>
+        <div class="signup-glow signup-glow-2"></div>
+
+        <!-- Stars -->
+        <div class="signup-stars">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+
+        <!-- Navigation -->
+        <nav class="signup-nav">
+
+            <a href="/" class="signup-logo">
+                Near<span>U</span>
+            </a>
+
+            <a href="/login" class="signup-login-link">
+                Already have an account? <span>Login</span>
+            </a>
+
+        </nav>
+
+
+        <!-- Signup container -->
+        <main class="signup-container">
+
+            <div class="signup-box">
+
+                <div class="signup-icon">
+                    ✦
+                </div>
+
+                <h1>Create Account</h1>
+
+                <p class="signup-subtitle">
+                    Join NearU and discover opportunities near you
+                </p>
+
+
+                <form method="POST" class="signup-form">
+
+                    <div class="signup-field">
+
+                        <label for="name">
+                            Name
+                        </label>
+
+                        <input
+                            id="name"
+                            type="text"
+                            name="name"
+                            placeholder="Enter your name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="signup-field">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="signup-field">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            placeholder="Create password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="signup-field">
+
+                        <label for="confirm_password">
+                            Confirm Password
+                        </label>
+
+                        <input
+                            id="confirm_password"
+                            type="password"
+                            name="confirm_password"
+                            placeholder="Confirm your password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button type="submit" class="signup-submit">
+                        Create Account
+                        <span>→</span>
+                    </button>
+
+                </form>
+
+
+                <div class="signup-note">
+                    By creating an account, you agree to use NearU
+                    responsibly and verify opportunities before making
+                    any agreements.
+                </div>
+
+
+                <p class="signup-footer">
+                    Already have an account?
+                    <a href="/login">Login</a>
+                </p>
+
+            </div>
+
+        </main>
+
+
+        <!-- Footer -->
+        <footer class="signup-page-footer">
+            © 2026 NearU • All Rights Reserved
+        </footer>
+
+    </div>
+
+</body>
+</html>

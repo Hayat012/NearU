@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearU</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="nearu-home">
+
+    <!-- ================= NAVBAR ================= -->
+
+    <nav class="nearu-navbar">
+        <div class="nav-inner">
+
+            <a href="/" class="nearu-logo">
+                Near<span>U</span>
+            </a>
+
+           <div class="nav-links">
+                <a href="/" class="nav-active">Home</a>
+
+                <a href="{{ url_for('messages') }}">
+                    Messages
+                </a>
+
+                <a href="/profile">
+                    Profile
+                </a>
+            </div>
+
+            <div class="nav-actions">
+
+                <a href="/messages"
+                class="nav-icon"
+                title="Messages">
+                    💬
+                </a>
+
+                <a href="/profile" class="nav-profile">
+
+                    <div class="nav-avatar">
+
+                        {% if profile and profile['profile_photo'] %}
+                            <img src="{{ url_for('static', filename=profile['profile_photo']) }}"
+                                 alt="Profile">
+                        {% else %}
+                            👤
+                        {% endif %}
+
+                    </div>
+
+                </a>
+
+                <button class="glow-btn small-glow"
+                        onclick="document.getElementById('post-modal').style.display='flex'">
+                    + Post Listing
+                </button>
+
+            </div>
+
+        </div>
+    </nav>
+
+
+    <!-- ================= HERO ================= -->
+
+    <section class="hero-section">
+
+        <!-- Animated stars -->
+        <div class="hero-stars">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="hero-glow"></div>
+
+        <div class="hero-content">
+
+            <div class="hero-badge">
+                ✦ Your local community marketplace
+            </div>
+
+            <h1>
+                Find what you need,
+                <span>near you.</span>
+            </h1>
+
+            <p>
+                Discover tutors, part-time jobs, rooms and local services
+                from people around you.
+            </p>
+
+            <div class="hero-buttons">
+
+                <a href="#listings" class="glow-btn">
+                    Explore Listings
+                    <span>→</span>
+                </a>
+
+                <button class="outline-glow-btn"
+                        onclick="document.getElementById('post-modal').style.display='flex'">
+                    + Post a Listing
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="hero-bottom-glow"></div>
+
+    </section>
+
+
+    <!-- ================= STATS ================= -->
+
+    <section class="stats-section">
+
+        <div class="stats-grid">
+
+            
+
+            
+            
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= LISTINGS ================= -->
+
+    <main class="listings-section" id="listings">
+
+        <div class="section-heading">
+
+            <div>
+                <span class="section-label">DISCOVER NEARBY</span>
+
+                <h2>
+                    Explore <span>Listings</span>
+                </h2>
+
+                <p>
+                    Find opportunities and services from people around you.
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- ================= SEARCH ================= -->
+
+        <form class="nearu-filter"
+              method="get"
+              action="/">
+
+            <div class="search-box">
+
+                <span>⌕</span>
+
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search title, location or keyword..."
+                    value="{{ search }}">
+
+            </div>
+
+
+            <select name="sort"
+                    onchange="this.form.submit()">
+
+                <option value="newest"
+                    {% if active_sort == 'newest' %}selected{% endif %}>
+                    Newest first
+                </option>
+
+                <option value="price"
+                    {% if active_sort == 'price' %}selected{% endif %}>
+                    Price: low to high
+                </option>
+
+            </select>
+
+
+            <button type="submit"
+                    class="search-btn">
+                Search
+            </button>
+
+        </form>
+
+
+        <!-- ================= CATEGORIES ================= -->
+
+        <div class="nearu-categories">
+
+            <a href="/?category=All&search={{ search }}&sort={{ active_sort }}"
+               class="category-chip
+               {% if active_category == 'All' %}active{% endif %}">
+                All
+            </a>
+
+            {% for cat in categories %}
+
+                <a href="/?category={{ cat }}&search={{ search }}&sort={{ active_sort }}"
+                   class="category-chip
+                   {% if active_category == cat %}active{% endif %}">
+                    {{ cat }}
+                </a>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- ================= LISTING CARDS ================= -->
+
+        {% if listings|length == 0 %}
+
+            <div class="empty-listings">
+
+                <div class="empty-icon">✦</div>
+
+                <h3>No listings found</h3>
+
+                <p>
+                    Try another keyword or category.
+                </p>
+
+            </div>
+
+        {% else %}
+
+            <div class="nearu-grid">
+
+                {% for l in listings %}
+
+                <article class="nearu-card">
+
+                    <!-- Card top -->
+
+                    <div class="listing-user">
+
+                        <div class="listing-avatar">
+
+                            {% if l.poster_photo %}
+
+                                <img
+                                    src="{{ url_for('static', filename=l.poster_photo) }}"
+                                    alt="Profile">
+
+                            {% else %}
+
+                                👤
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="listing-user-info">
+
+                            <strong>
+                                {{ l.poster_name or "NearU User" }}
+                            </strong>
+
+                            <span>
+                                {{ l.posted_ago }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Category -->
+
+                    <div class="listing-category-row">
+
+                        <span class="listing-category">
+                            {{ l.category }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- Title -->
+
+                    <h3>
+                        {{ l.title }}
+                    </h3>
+
+
+                    <!-- Description -->
+
+                    <p class="listing-description">
+                        {{ l.description }}
+                    </p>
+
+
+                    <!-- Location -->
+
+                    <div class="listing-location">
+                        <span>📍</span>
+                        {{ l.location }}
+                    </div>
+
+
+                    <!-- Price -->
+
+                    {% if l.price|float > 0 %}
+
+                    <div class="listing-price">
+
+                        <strong>
+                            ₹{{ l.price }}
+                        </strong>
+
+                        <span>
+                            {{ l.price_unit }}
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <!-- Footer -->
+
+                    <div class="listing-footer">
+
+                        {% if l.user_id == session["user_id"] %}
+
+                            <a href="{{ url_for('edit_listing', listing_id=l.id) }}"
+                               class="edit-link">
+                                ✏️ Edit
+                            </a>
+
+                            <form
+                                action="{{ url_for('delete_listing', listing_id=l.id) }}"
+                                method="POST">
+
+                                <button type="submit"
+                                        class="delete-link"
+                                        onclick="return confirm('Are you sure you want to delete this listing?');">
+                                    🗑 Delete
+                                </button>
+
+                            </form>
+
+                        {% elif l.user_id %}
+
+                            <span class="contact-number">
+                                {{ l.contact }}
+                            </span>
+
+                            <a href="{{ url_for('chat', user_id=l.user_id) }}"
+                               class="contact-btn">
+                                Contact →
+                            </a>
+
+                        {% else %}
+
+                            <span class="unavailable">
+                                Contact unavailable
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="nearu-footer">
+
+        <div class="footer-logo">
+            Near<span>U</span>
+        </div>
+
+        <p>
+            Find help. Find work. Find it near you.
+        </p>
+
+        <div class="footer-line"></div>
+
+        <small>
+            © 2026 NearU. Built for local communities.
+        </small>
+
+    </footer>
+
+
+    <!-- ================= POST MODAL ================= -->
+
+    <div id="post-modal"
+         class="nearu-modal-overlay"
+         onclick="if(event.target===this) this.style.display='none'">
+
+        <div class="nearu-modal">
+
+            <div class="modal-title">
+
+                <div>
+                    <span>CREATE</span>
+                    <h2>Post a Listing</h2>
+                </div>
+
+                <button
+                    class="modal-close"
+                    onclick="document.getElementById('post-modal').style.display='none'">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="post" action="/add">
+
+                <label>Title</label>
+
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="e.g. Physics tutoring for first-years"
+                    required>
+
+
+                <label>Category</label>
+
+                <input
+                    type="text"
+                    name="category"
+                    placeholder="e.g. Tutor, Electrician, Delivery, Designer"
+                    required>
+
+
+                <label>Description</label>
+
+                <textarea
+                    name="description"
+                    rows="3"
+                    placeholder="A short, clear description"></textarea>
+
+
+                <div class="modal-form-row">
+
+                    <div>
+
+                        <label>Location</label>
+
+                        <input
+                            type="text"
+                            name="location"
+                            placeholder="e.g. Near Gate 3"
+                            required>
+
+                    </div>
+
+
+                    <div>
+
+                        <label>Contact</label>
+
+                        <input
+                            type="text"
+                            name="contact"
+                            placeholder="Email or phone"
+                            required>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-form-row">
+
+                    <div>
+
+                        <label>Price (₹, optional)</label>
+
+                        <input
+                            type="number"
+                            name="price"
+                            placeholder="0">
+
+                    </div>
+
+
+                    <div>
+
+                        <label>Unit</label>
+
+                        <select name="price_unit">
+
+                            <option value="/hr">/hr</option>
+                            <option value="/mo">/mo</option>
+                            <option value="/session">/session</option>
+                            <option value="/event">/event</option>
+                            <option value="">flat</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="glow-btn modal-submit">
+                    Post Listing →
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+</body>
+</html>

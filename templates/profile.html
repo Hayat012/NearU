@@ -1,0 +1,555 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Profile - NearU</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="profile-page">
+
+    <div class="profile-box">
+
+        {% if profile and not edit_mode %}
+
+        <!-- ================= PROFILE DETAILS ================= -->
+
+        <h1>My Profile</h1>
+
+        <!-- Profile Photo -->
+        <div class="profile-photo-section">
+
+            <div class="profile-photo">
+
+                {% if profile['profile_photo'] %}
+
+                    <img
+                        src="{{ url_for('static', filename=profile['profile_photo']) }}"
+                        alt="Profile Photo"
+                    >
+
+                {% else %}
+
+                    <div style="font-size: 50px;">👤</div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- Name -->
+        <h2>{{ profile['name'] }}</h2>
+
+
+        <!-- Location -->
+        <p>
+            📍 {{ profile['location'] }}
+        </p>
+
+
+        <!-- About -->
+        {% if profile['about'] %}
+
+            <h3>About</h3>
+
+            <p>{{ profile['about'] }}</p>
+
+        {% endif %}
+
+
+        <!-- Skills -->
+        {% if profile['skills'] %}
+
+            <h3>Skills</h3>
+
+            <p>{{ profile['skills'] }}</p>
+
+        {% endif %}
+
+
+        <!-- Experience -->
+        {% if profile['experience'] %}
+
+            <h3>Experience</h3>
+
+            <p>{{ profile['experience'] }}</p>
+
+        {% endif %}
+
+
+        <!-- Buttons -->
+
+        <a href="{{ url_for('profile', edit=1) }}">
+            <button type="button">
+                Edit Profile
+            </button>
+        </a>
+
+        <br><br>
+
+        <a href="{{ url_for('index') }}">
+            <button type="button">
+                Home
+            </button>
+        </a>
+
+        <br><br>
+
+        <a href="{{ url_for('logout') }}">
+            <button type="button">
+                Logout
+            </button>
+        </a>
+
+
+        {% else %}
+
+        <!-- ================= CREATE / EDIT PROFILE ================= -->
+
+        <h1>
+            {% if profile %}
+                Edit Profile
+            {% else %}
+                Create Your Profile
+            {% endif %}
+        </h1>
+
+        <p>
+            {% if profile %}
+                Update your NearU profile
+            {% else %}
+                Create your NearU profile
+            {% endif %}
+        </p>
+
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <!-- Profile Photo -->
+
+            <div class="profile-photo-section">
+
+                <div class="profile-photo">
+
+                    <img
+                        id="profilePreview"
+
+                        src="{% if profile and profile['profile_photo'] %}
+                            {{ url_for('static', filename=profile['profile_photo']) }}
+                        {% else %}
+                            {{ url_for('static', filename='default-profile.png') }}
+                        {% endif %}"
+
+                        alt="Profile Photo"
+                    >
+
+                </div>
+
+
+                <label for="profilePhoto" class="photo-button">
+                    Add Profile Photo
+                </label>
+
+
+                <input
+                    type="file"
+                    id="profilePhoto"
+                    name="profile_photo"
+                    accept="image/*"
+                    hidden
+                >
+
+            </div>
+
+
+            <!-- Name -->
+
+            <label>Name</label>
+
+            <input
+                type="text"
+                name="name"
+                value="{{ profile['name'] if profile else user['name'] }}"
+                required
+            >
+
+
+            <!-- About -->
+
+            <label>About You</label>
+
+            <textarea
+                name="about"
+                placeholder="Tell something about yourself"
+                rows="4"
+            >{{ profile['about'] if profile else '' }}</textarea>
+
+
+            <!-- Location -->
+
+            <label>Location</label>
+
+            <div class="location-input-wrapper">
+
+                <input
+                    type="text"
+                    id="locationInput"
+                    name="location"
+                    value="{{ profile['location'] if profile else '' }}"
+                    placeholder="Enter your location"
+                    required
+                >
+
+                <button
+                    type="button"
+                    id="currentLocationButton"
+                    class="current-location-button"
+                >
+                    📍 Use Current Location
+                </button>
+
+            </div>
+
+            <p id="locationStatus" class="location-status"></p>
+
+            <input type="hidden" name="latitude" id="latitudeInput">
+            <input type="hidden" name="longitude" id="longitudeInput">
+
+
+            <!-- Skills -->
+
+            <label>Skills</label>
+
+            <input
+                type="text"
+                name="skills"
+                value="{{ profile['skills'] if profile else '' }}"
+            >
+
+
+            <!-- Experience -->
+
+            <label>Experience</label>
+
+            <textarea
+                name="experience"
+                placeholder="Example: 2 years experience as a tutor"
+                rows="3"
+            >{{ profile['experience'] if profile and profile['experience'] else '' }}</textarea>
+
+
+            <!-- Save -->
+
+            <button type="submit">
+                Save Profile
+            </button>
+
+        </form>
+
+
+        {% if profile %}
+
+            <br>
+
+            <a href="{{ url_for('profile') }}">
+                <button type="button">
+                    Cancel
+                </button>
+            </a>
+
+        {% endif %}
+
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- Profile Photo Preview -->
+
+<script>
+
+const profilePhoto =
+    document.getElementById("profilePhoto");
+
+const profilePreview =
+    document.getElementById("profilePreview");
+
+
+if (profilePhoto && profilePreview) {
+
+    profilePhoto.addEventListener("change", function () {
+
+        const file = this.files[0];
+
+        if (file) {
+
+            profilePreview.src =
+                URL.createObjectURL(file);
+
+        }
+
+    });
+
+}
+
+
+
+/* =========================================================
+   CURRENT LOCATION
+   ========================================================= */
+
+const currentLocationButton =
+    document.getElementById("currentLocationButton");
+
+const locationInput =
+    document.getElementById("locationInput");
+
+const locationStatus =
+    document.getElementById("locationStatus");
+ 
+const latitudeInput =
+    document.getElementById("latitudeInput");
+
+const longitudeInput =
+    document.getElementById("longitudeInput");    
+
+
+if (currentLocationButton && locationInput) {
+
+    currentLocationButton.addEventListener("click", function () {
+
+        if (!navigator.geolocation) {
+
+            locationStatus.textContent =
+                "❌ Location service is not supported by this browser.";
+
+            return;
+        }
+
+
+        currentLocationButton.disabled = true;
+
+        currentLocationButton.textContent =
+            "📍 Detecting location...";
+
+        locationStatus.textContent =
+            "Please allow location access in your browser.";
+
+
+        navigator.geolocation.getCurrentPosition(
+
+            async function (position) {
+
+                const latitude =
+                    position.coords.latitude;
+
+                const longitude =
+                    position.coords.longitude;
+
+                if (latitudeInput && longitudeInput) {
+                    latitudeInput.value = latitude;
+                    longitudeInput.value = longitude;
+                }
+                alert(
+                "LAT: " + latitudeInput.value +
+                "\nLON: " + longitudeInput.value
+            );
+
+
+                try {
+
+                    /*
+                     * BigDataCloud
+                     * Free client-side reverse geocoding
+                     */
+
+                    const response = await fetch(
+                        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+                    );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Location address could not be found."
+                        );
+
+                    }
+
+
+                    const data =
+                        await response.json();
+
+
+                    /*
+                     * Get the most useful location details
+                     */
+
+                    const locality =
+                        data.locality || "";
+
+                    const city =
+                        data.city || "";
+
+                    const state =
+                        data.principalSubdivision || "";
+
+                    const postcode =
+                        data.postcode || "";
+
+                    const country =
+                        data.countryName || "";
+
+                    const plusCode =
+                        data.plusCode || "";
+
+
+                    /*
+                     * Build a clean NearU location
+                     */
+
+                    const locationParts = [];
+
+
+                    if (locality) {
+                        locationParts.push(locality);
+                    }
+
+
+                    if (city && city !== locality) {
+                        locationParts.push(city);
+                    }
+
+
+                    if (state) {
+                        locationParts.push(state);
+                    }
+
+
+                    if (postcode) {
+                        locationParts.push(postcode);
+                    }
+
+
+                    if (country) {
+                        locationParts.push(country);
+                    }
+
+
+                    /*
+                     * Add Plus Code when available
+                     */
+
+                    let finalLocation =
+                        locationParts.join(", ");
+
+
+                    if (plusCode) {
+
+                        finalLocation =
+                            plusCode + ", " + finalLocation;
+
+                    }
+
+
+                    if (finalLocation) {
+
+                        locationInput.value =
+                            finalLocation;
+
+
+                        locationStatus.textContent =
+                            "✅ Current location added successfully.";
+
+                    } else {
+
+                        locationStatus.textContent =
+                            "❌ Address details could not be detected.";
+
+                    }
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    locationStatus.textContent =
+                        "❌ Could not get address. Please enter it manually.";
+
+                }
+
+
+                currentLocationButton.disabled = false;
+
+                currentLocationButton.textContent =
+                    "📍 Use Current Location";
+
+            },
+
+
+            function (error) {
+
+                console.error(error);
+
+
+                if (error.code === 1) {
+
+                    locationStatus.textContent =
+                        "❌ Location permission denied. Please allow location access.";
+
+                } else if (error.code === 2) {
+
+                    locationStatus.textContent =
+                        "❌ Your location could not be detected.";
+
+                } else if (error.code === 3) {
+
+                    locationStatus.textContent =
+                        "❌ Location request timed out.";
+
+                } else {
+
+                    locationStatus.textContent =
+                        "❌ Unable to detect your location.";
+
+                }
+
+
+                currentLocationButton.disabled = false;
+
+                currentLocationButton.textContent =
+                    "📍 Use Current Location";
+
+            },
+
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+
+        );
+
+    });
+
+}
+
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Listing - NearU</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="edit-listing-page">
+
+<div class="edit-listing-container">
+
+    <div class="modal" style="margin:40px auto;">
+
+        <div class="modal-header">
+            <h2>Edit listing</h2>
+
+            <a href="{{ url_for('index') }}"
+               class="close-btn"
+               style="text-decoration:none;">
+                ×
+            </a>
+        </div>
+
+        <form method="POST">
+
+            <label>Title</label>
+
+            <input type="text"
+                   name="title"
+                   value="{{ listing['title'] }}"
+                   required>
+
+
+            <label>Category</label>
+
+            <input type="text"
+                   name="category"
+                   value="{{ listing['category'] }}"
+                   required>
+
+
+            <label>Description</label>
+
+            <textarea name="description"
+                      rows="4">{{ listing['description'] }}</textarea>
+
+
+            <label>Location</label>
+
+            <input type="text"
+                   name="location"
+                   value="{{ listing['location'] }}"
+                   required>
+
+
+            <label>Contact</label>
+
+            <input type="text"
+                   name="contact"
+                   value="{{ listing['contact'] }}"
+                   required>
+
+
+            <div class="form-row">
+
+                <div>
+
+                    <label>Price (₹)</label>
+
+                    <input type="number"
+                           name="price"
+                           value="{{ listing['price'] }}">
+
+                </div>
+
+
+                <div>
+
+                    <label>Unit</label>
+
+                    <select name="price_unit">
+
+                        <option value="/hr"
+                            {% if listing['price_unit'] == '/hr' %}selected{% endif %}>
+                            /hr
+                        </option>
+
+                        <option value="/mo"
+                            {% if listing['price_unit'] == '/mo' %}selected{% endif %}>
+                            /mo
+                        </option>
+
+                        <option value="/session"
+                            {% if listing['price_unit'] == '/session' %}selected{% endif %}>
+                            /session
+                        </option>
+
+                        <option value="/event"
+                            {% if listing['price_unit'] == '/event' %}selected{% endif %}>
+                            /event
+                        </option>
+
+                        <option value=""
+                            {% if listing['price_unit'] == '' %}selected{% endif %}>
+                            flat
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="btn-primary full-width">
+                Save changes
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

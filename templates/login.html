@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - NearU</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="login-page-body">
+
+    <div class="login-page">
+
+        <!-- Background glow -->
+        <div class="login-glow login-glow-1"></div>
+        <div class="login-glow login-glow-2"></div>
+
+        <!-- Stars -->
+        <div class="login-stars">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+
+        <!-- Top logo -->
+        <nav class="login-nav">
+
+            <a href="/" class="login-logo">
+                Near<span>U</span>
+            </a>
+
+            <a href="/" class="back-home">
+                ← Back to Home
+            </a>
+
+        </nav>
+
+
+        <!-- Login Card -->
+        <main class="login-container">
+
+            <div class="login-box">
+
+                <div class="login-icon">
+                    ✦
+                </div>
+
+                <h1>Welcome Back</h1>
+
+                <p class="login-subtitle">
+                    Login to your NearU account
+                </p>
+
+
+                <form method="POST" class="login-form">
+
+                    <div class="login-field">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="login-field">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button type="submit" class="login-submit">
+                        Login
+                        <span>→</span>
+                    </button>
+
+                </form>
+
+
+                <div class="login-divider">
+                    <span></span>
+                    <small>OR</small>
+                    <span></span>
+                </div>
+
+
+                <p class="login-footer">
+                    Don't have an account?
+                    <a href="/signup">Sign Up</a>
+                </p>
+
+            </div>
+
+        </main>
+
+
+        <!-- Footer -->
+        <footer class="login-page-footer">
+            © 2026 NearU • All Rights Reserved
+        </footer>
+
+    </div>
+
+</body>
+</html>
