@@ -41,17 +41,20 @@ def days_ago(date_str):
 
 #----------------------------------
 def send_verification_email(to_email, verification_code):
+
     print("SENDER EMAIL:", SENDER_EMAIL)
     print("APP PASSWORD EXISTS:", bool(SENDER_PASSWORD))
 
-    msg = EmailMessage()
+    try:
 
-    msg["Subject"] = "NearU - Email Verification Code"
-    msg["From"] = SENDER_EMAIL
-    msg["To"] = to_email
+        msg = EmailMessage()
 
-    msg.set_content(
-        f"""Hello,
+        msg["Subject"] = "NearU - Email Verification Code"
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = to_email
+
+        msg.set_content(
+            f"""Hello,
 
 Your NearU verification code is:
 
@@ -62,11 +65,26 @@ Please enter this code on the NearU verification page.
 Thank you,
 NearU Team
 """
-    )
+        )
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(SENDER_EMAIL, SENDER_PASSWORD)
-        smtp.send_message(msg)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as smtp:
+
+            smtp.login(
+                SENDER_EMAIL,
+                SENDER_PASSWORD
+            )
+
+            smtp.send_message(msg)
+
+        print("VERIFICATION EMAIL SENT SUCCESSFULLY")
+
+        return True
+
+    except Exception as e:
+
+        print("EMAIL ERROR:", str(e))
+
+        return False
         
 @app.route("/")
 def intro():
@@ -313,7 +331,6 @@ def verify_email():
         email = request.form["email"].strip().lower()
         code = request.form["code"].strip()
 
-        # Find user in Supabase
         result = (
             supabase
             .table("users")
@@ -327,11 +344,9 @@ def verify_email():
 
         user = result.data[0]
 
-        # Check verification code
         if user["verification_code"] != code:
             return "Invalid verification code!"
 
-        # Verify email in Supabase
         supabase.table("users").update({
             "email_verified": True,
             "verification_code": None
@@ -339,7 +354,12 @@ def verify_email():
 
         return redirect(url_for("dashboard"))
 
-    return render_template("verify_email.html")
+    email = request.args.get("email", "")
+
+    return render_template(
+        "verify_email.html",
+        email=email
+    )
 
 @app.route("/add", methods=["POST"])
 def add_listing():
