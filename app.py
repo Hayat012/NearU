@@ -233,12 +233,13 @@ def signup():
         if password != confirm_password:
             return "Passwords do not match!"
 
-        # Check existing user in Supabase
+        # Normalize and match email case-insensitively; some live users may
+        # have signed up with mixed-case values in the database.
         existing_user = (
             supabase
             .table("users")
             .select("*")
-            .eq("email", email)
+            .ilike("email", email)
             .execute()
         )
 
